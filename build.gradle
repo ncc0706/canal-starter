@@ -1,0 +1,167 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
+plugins {
+    id 'java-library'
+    id 'org.springframework.boot' version '2.7.10' apply false
+}
+
+apply from: "dependencies.gradle"
+
+allprojects {
+
+    group 'io.github.ncc0706'
+    version '0.0.1'
+
+    repositories {
+        mavenLocal()
+        maven { url 'https://maven.aliyun.com/nexus/content/groups/public' }
+        maven { url 'https://maven.aliyun.com/nexus/content/repositories/google' }
+        maven { url 'https://maven.aliyun.com/nexus/content/repositories/jcenter' }
+        mavenCentral()
+    }
+}
+
+subprojects {
+
+    apply plugin: 'signing'
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+    apply plugin: 'io.spring.dependency-management'
+
+    [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
+
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+
+    dependencyManagement {
+        imports {
+            mavenBom SpringBootPlugin.BOM_COORDINATES
+        }
+        dependencies {
+            for (depJar in rootProject.ext.dependencies) {
+                dependency depJar.value
+            }
+        }
+
+    }
+
+    dependencies {
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+    }
+
+    configurations {
+        //移除spring boot 默认logger依赖
+        all*.exclude module: 'spring-boot-starter-logging'
+    }
+
+    jar {
+        manifest.attributes provider: 'gradle'
+    }
+
+    task sourceJar(type: Jar) {
+        classifier "sources"
+        from sourceSets.main.allJava
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier "javadoc"
+        from javadoc.destinationDir
+    }
+
+    javadoc {
+        description = "生成jar格式的javadoc。"
+        // 只显示 protected 和 public 的类和成员
+        options.memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PROTECTED
+        options.author = true
+        options.version = true
+        options.header = project.name
+        // 静默javadoc检查（比如不支持@date会报错等），jdk 8+
+        options.addStringOption('Xdoclint:none', '-quiet')
+        // 防止本地打开中文乱码
+        options.addStringOption("charset", "UTF-8")
+        // suppress warnings due to cross-module @see and @link references;
+        // note that global 'api' task does display all warnings.
+        logging.captureStandardError LogLevel.INFO
+        // suppress "## warnings" message
+        logging.captureStandardOutput LogLevel.INFO
+        // 编码一定要配置否则直接出错
+//        options.encoding = "UTF-8"
+        options.charSet = "UTF-8"
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+
+                from components.java
+                artifact sourceJar
+                artifact javadocJar
+
+                versionMapping {
+                    usage('java-api') {
+                        fromResolutionOf('runtimeClasspath')
+                    }
+                    usage('java-runtime') {
+                        fromResolutionResult()
+                    }
+                }
+
+                pom {
+                    name = "canal-starter"
+                    description = "canal starter"
+                    url = "https://github.com/ncc0706/canal-starter"
+                    licenses {
+                        license {
+                            name = "Apache License 2.0"
+                            url = "https://github.com/ncc0706/canal-starter/blob/master/LICENSE"
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = "ncc0706"
+                            name = "ncc0706"
+                            email = "ncc0706@gmail.com"
+                        }
+                    }
+                    scm {
+                        connection = "scm:git:https://github.com/ncc0706/canal-starter.git"
+                        developerConnection = "scm:git:https://github.com/ncc0706/canal-starter.git"
+                        url = "https://github.com/ncc0706/canal-starter"
+                    }
+                }
+            }
+        }
+
+        repositories {
+            // releases 仓库
+            maven {
+                name 'releases'
+                url 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+                credentials {
+                    username = "${NEXUS_USERNAME}"
+                    password = "${NEXUS_PASSWORD}"
+                }
+            }
+            // snapshots 仓库
+            maven {
+                name = 'snapshot'
+                url = 'https://oss.sonatype.org/content/repositories/snapshots/'
+                credentials {
+                    username = "${NEXUS_USERNAME}"
+                    password = "${NEXUS_PASSWORD}"
+                }
+            }
+        }
+
+    }
+
+    signing {
+        sign publishing.publications.mavenJava
+    }
+}
+
+
+wrapper {
+    distributionUrl = 'https://mirrors.huaweicloud.com/gradle/gradle-7.6-bin.zip'
+}

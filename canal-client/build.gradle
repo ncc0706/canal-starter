@@ -1,0 +1,9 @@
+dependencies {
+
+    api "com.alibaba.otter:canal.client"
+    api 'com.alibaba.otter:canal.protocol'
+    api 'org.apache.commons:commons-lang3'
+
+    implementation 'org.slf4j:slf4j-api'
+    implementation 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
+}

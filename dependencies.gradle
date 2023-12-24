@@ -1,0 +1,15 @@
+ext {
+
+    canalVersion = '1.1.7'
+    commonsLang3Version = '3.14.0'
+
+//    version = [
+//            "": ""
+//    ]
+
+    dependencies = [
+            "canal-client"  : "com.alibaba.otter:canal.client:${canalVersion}",
+            "canal-protocol": "com.alibaba.otter:canal.protocol:${canalVersion}",
+            "commons-lang3" : "org.apache.commons:commons-lang:${commonsLang3Version}"
+    ]
+}

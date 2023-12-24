@@ -1,0 +1,4 @@
+rootProject.name = 'canal-starter'
+include 'canal-client'
+include 'canal-spring-boot-starter'
+include 'canal-spring-boot-autoconfigure'

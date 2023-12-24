@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+io.github.ncc0706.autoconfigure.KafkaClientAutoConfiguration,\
+io.github.ncc0706.autoconfigure.SimpleClientAutoConfiguration,\
+io.github.ncc0706.autoconfigure.ClusterClientAutoConfiguration,\
+io.github.ncc0706.autoconfigure.ZookeeperClientAutoConfiguration
