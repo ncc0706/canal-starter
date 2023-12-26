@@ -10,7 +10,7 @@ apply from: "dependencies.gradle"
 allprojects {
 
     group 'io.github.ncc0706'
-    version '0.0.1'
+    version '0.0.2'
 
     repositories {
         mavenLocal()
